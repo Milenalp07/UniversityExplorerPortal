@@ -1,0 +1,176 @@
+﻿@page "/"
+
+@inject NavigationManager Navigation
+
+<PageTitle>Home - University Portal</PageTitle>
+
+<div class="container py-5">
+
+    <!-- Hero Section -->
+    <div class="p-5 mb-5 rounded-4 text-white"
+         style="background: linear-gradient(120deg, #142B4A, #2563EB);">
+
+        <h1 class="display-4 fw-bold">
+            Explore Your Future
+        </h1>
+
+        <p class="lead mt-3">
+            Discover universities around the world and manage
+            your university applications in one place.
+        </p>
+
+        <button class="btn btn-light btn-lg mt-3"
+                @onclick="ExploreUniversities">
+            Explore Universities →
+        </button>
+
+    </div>
+
+    <!-- Introduction -->
+    <div class="text-center mb-5">
+
+        <h2 class="fw-bold">Welcome to University Portal</h2>
+
+        <p class="text-muted">
+            Your journey towards higher education starts here.
+            Explore countries, discover universities and manage
+            your applications easily.
+        </p>
+
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="row g-4">
+
+        <!-- Explore Countries -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+
+                    <div class="display-4 mb-3">🌍</div>
+
+                    <h5 class="fw-bold">Explore Countries</h5>
+
+                    <p class="text-muted">
+                        Discover countries and learn about
+                        their capitals, regions and population.
+                    </p>
+
+                    <button class="btn btn-outline-primary"
+                            @onclick="ExploreCountries">
+                        Explore Countries
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Find Universities -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+
+                    <div class="display-4 mb-3">🎓</div>
+
+                    <h5 class="fw-bold">Find Universities</h5>
+
+                    <p class="text-muted">
+                        Search for universities around
+                        the world and explore their details.
+                    </p>
+
+                    <button class="btn btn-outline-primary"
+                            @onclick="FindUniversities">
+                        Find Universities
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Apply Online -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+
+                    <div class="display-4 mb-3">📝</div>
+
+                    <h5 class="fw-bold">Apply Online</h5>
+
+                    <p class="text-muted">
+                        Submit your university application
+                        through our online form.
+                    </p>
+
+                    <button class="btn btn-outline-primary"
+                            @onclick="ApplyOnline">
+                        Apply Now
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Applications -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+
+                    <div class="display-4 mb-3">📋</div>
+
+                    <h5 class="fw-bold">Manage Applications</h5>
+
+                    <p class="text-muted">
+                        View and edit your submitted
+                        university applications.
+                    </p>
+
+                    <button class="btn btn-outline-primary"
+                            @onclick="ManageApplications">
+                        View Applications
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-5 pt-4 border-top">
+
+        <p class="text-muted">
+            University Portal - Full Stack Development CA2
+        </p>
+
+    </div>
+
+</div>
+
+@code {
+
+    private void ExploreCountries()
+    {
+        Navigation.NavigateTo("/university-portal#country-selection");
+    }
+
+    private void ExploreUniversities()
+    {
+        Navigation.NavigateTo("/university-portal#university-list");
+    }
+
+    private void FindUniversities()
+    {
+        Navigation.NavigateTo("/university-portal#university-search");
+    }
+
+    private void ApplyOnline()
+    {
+        Navigation.NavigateTo("/student-applications/create");
+    }
+
+    private void ManageApplications()
+    {
+        Navigation.NavigateTo("/student-applications");
+    }
+}

@@ -1,0 +1,25 @@
+﻿
+@if (Country != null)
+{
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Country Details</h4>
+
+            <h5>@Country.Flag @Country.Name</h5>
+
+            <p><strong>Capital:</strong> @Country.Capital</p>
+
+            <p><strong>Region:</strong> @Country.Region</p>
+
+            <p>
+                <strong>Population:</strong>
+                @Country.Population.ToString("N0")
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Country? Country { get; set; }
+}

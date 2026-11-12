@@ -1,0 +1,250 @@
+﻿@page "/university-portal"
+
+@using global::UniversityPortal.Models
+@using global::UniversityPortal.Services
+@using global::UniversityPortal.Components.Shared
+
+@inject CountryService CountryService
+@inject UniversityService UniversityService
+
+<PageTitle>University Explorer</PageTitle>
+
+<div class="container mt-4 mb-5">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+
+        <h2 class="fw-bold">University Explorer</h2>
+
+        <p class="text-muted">
+            Explore countries and discover universities around the world.
+        </p>
+
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info">
+            Loading countries...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <!-- Country Selection -->
+        <div class="card shadow-sm border-0 mb-4"
+             id="country-selection">
+
+            <div class="card-body">
+
+                <label class="form-label fw-bold">
+                    Select Country
+                </label>
+
+                <select class="form-select"
+                        @bind="selectedCountryName"
+                        @bind:after="OnCountryChanged">
+
+                    <option value="">
+                        Choose a country...
+                    </option>
+
+                    @foreach (var country in countries)
+                    {
+                        <option value="@country.Name">
+                            @country.Name
+                        </option>
+                    }
+
+                </select>
+
+            </div>
+
+        </div>
+
+        @if (selectedCountry != null)
+        {
+            <!-- Country Details -->
+            <CountryDetails Country="selectedCountry" />
+
+            <hr class="my-4" />
+
+            <!-- University List -->
+            <div id="university-list">
+
+                <div class="mb-3">
+
+                    <h4 class="fw-bold">
+                        Universities in @selectedCountry.Name
+                    </h4>
+
+                    <p class="text-muted">
+                        Explore the universities available in this country.
+                    </p>
+
+                </div>
+
+                <!-- University Search -->
+                <div class="mb-4" id="university-search">
+
+                    <input class="form-control"
+                           @bind="searchText"
+                           @bind:event="oninput"
+                           placeholder="Search university..." />
+
+                </div>
+
+                @if (universitiesLoading)
+                {
+                    <div class="alert alert-info">
+                        Loading universities...
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(universityError))
+                {
+                    <div class="alert alert-danger">
+                        @universityError
+                    </div>
+                }
+                else if (filteredUniversities.Count == 0)
+                {
+                    <div class="alert alert-warning">
+                        No universities found.
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+
+                        @foreach (var university in filteredUniversities)
+                        {
+                            <div class="col-12 col-md-6 mb-3">
+
+                                <UniversityCard University="university"
+                                                OnSelect="SelectUniversity" />
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+            </div>
+
+            <!-- University Details -->
+            @if (selectedUniversity != null)
+            {
+                <div class="mt-4">
+
+                    <UniversityDetails University="selectedUniversity" />
+
+                </div>
+            }
+        }
+        else
+        {
+            <div class="alert alert-light border mt-3">
+                Select a country to discover its universities.
+            </div>
+        }
+    }
+
+</div>
+
+
+@code {
+
+    private List<Country> countries = new();
+
+    private List<University> universities = new();
+
+    private Country? selectedCountry;
+
+    private University? selectedUniversity;
+
+    private string selectedCountryName = string.Empty;
+
+    private string searchText = string.Empty;
+
+    private string errorMessage = string.Empty;
+
+    private string universityError = string.Empty;
+
+    private bool isLoading = true;
+
+    private bool universitiesLoading = false;
+
+    private List<University> filteredUniversities =>
+        universities
+            .Where(u => u.Name.Contains(
+                searchText,
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            countries = await CountryService.GetCountriesAsync();
+
+            countries = countries
+                .OrderBy(c => c.Name)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                "Unable to load countries: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnCountryChanged()
+    {
+        selectedUniversity = null;
+
+        selectedCountry = countries.FirstOrDefault(
+            c => c.Name == selectedCountryName);
+
+        universities.Clear();
+
+        searchText = string.Empty;
+
+        universityError = string.Empty;
+
+        if (selectedCountry == null)
+            return;
+
+        universitiesLoading = true;
+
+        try
+        {
+            universities = await UniversityService
+                .GetUniversitiesByCountryAsync(selectedCountry.Name);
+        }
+        catch (Exception ex)
+        {
+            universityError =
+                "Unable to load universities: " + ex.Message;
+        }
+        finally
+        {
+            universitiesLoading = false;
+        }
+    }
+
+    private Task SelectUniversity(University university)
+    {
+        selectedUniversity = university;
+
+        return Task.CompletedTask;
+    }
+}

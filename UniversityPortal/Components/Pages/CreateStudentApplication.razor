@@ -1,0 +1,99 @@
+﻿@page "/student-applications/create"
+
+
+@inject StudentApplicationService ApplicationApi
+@inject NavigationManager Navigation
+
+<PageTitle>Create Student Application</PageTitle>
+
+<div class="container mt-4">
+
+    <h2>Create Student Application</h2>
+
+    <p class="text-muted">
+        Complete the form below to submit a university application.
+    </p>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success">
+                    @successMessage
+
+                    <button class="btn btn-outline-success btn-sm ms-2"
+                            @onclick="ViewApplications">
+                        View Applications
+                    </button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
+
+            <StudentApplicationForm Application="application"
+                                    OnSave="SubmitApplication"
+                                    ButtonText="Submit Application"
+                                    IsSubmitting="isSubmitting" />
+
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    private StudentApplication application = new();
+
+    private bool isSubmitting = false;
+
+    private string successMessage = string.Empty;
+
+    private string errorMessage = string.Empty;
+
+    private async Task SubmitApplication(StudentApplication newApplication)
+    {
+        isSubmitting = true;
+
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        try
+        {
+            bool success = await ApplicationApi
+                .CreateApplicationAsync(newApplication);
+
+            if (success)
+            {
+                successMessage =
+                    "Student application submitted successfully!";
+
+                application = new StudentApplication();
+            }
+            else
+            {
+                errorMessage =
+                    "Unable to submit application. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                "An error occurred: " + ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ViewApplications()
+    {
+        Navigation.NavigateTo("/student-applications");
+    }
+}

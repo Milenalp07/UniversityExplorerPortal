@@ -1,0 +1,160 @@
+﻿@page "/student-applications"
+
+@inject StudentApplicationService ApplicationApi
+@inject NavigationManager Navigation
+
+<PageTitle>Student Applications</PageTitle>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2>Student Applications</h2>
+
+            <p class="text-muted">
+                View and manage student university applications.
+            </p>
+        </div>
+
+        <button class="btn btn-primary"
+                @onclick="CreateApplication">
+            + New Application
+        </button>
+
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info">
+            Loading student applications...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+
+            <button class="btn btn-outline-danger btn-sm ms-2"
+                    @onclick="LoadApplications">
+                Try Again
+            </button>
+        </div>
+    }
+    else if (applications.Count == 0)
+    {
+        <div class="alert alert-warning">
+            No student applications found.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            Successfully loaded @applications.Count applications.
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-striped table-hover align-middle">
+
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>University</th>
+                        <th>Country</th>
+                        <th>Course</th>
+                        <th>Application Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var application in applications)
+                    {
+                        <tr>
+                            <td>@application.Id</td>
+
+                            <td>
+                                @application.StudentName
+                            </td>
+
+                            <td>
+                                @application.University
+                            </td>
+
+                            <td>
+                                @application.Country
+                            </td>
+
+                            <td>
+                                @application.Course
+                            </td>
+
+                            <td>
+                                @(application.ApplicationDate?.ToString("dd/MM/yyyy")
+                                    ?? "Not provided")
+                            </td>
+
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => EditApplication(application.Id)">
+                                    Edit
+                                </button>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<StudentApplication> applications = new();
+
+    private bool isLoading = true;
+
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApplications();
+    }
+
+    private async Task LoadApplications()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            applications = await ApplicationApi.GetApplicationsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                "Unable to load student applications: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void CreateApplication()
+    {
+        Navigation.NavigateTo("/student-applications/create");
+    }
+
+    private void EditApplication(int id)
+    {
+        Navigation.NavigateTo($"/student-applications/edit/{id}");
+    }
+}

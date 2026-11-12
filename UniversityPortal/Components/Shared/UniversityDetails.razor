@@ -1,0 +1,46 @@
+﻿
+@if (University != null)
+{
+    <div class="card border-primary shadow-sm mt-4">
+        <div class="card-body">
+            <h4 class="card-title">University Details</h4>
+
+            <p>
+                <strong>Name:</strong>
+                @University.Name
+            </p>
+
+            <p>
+                <strong>Country:</strong>
+                @University.Country
+            </p>
+
+            <p>
+                <strong>Website:</strong>
+
+                @if (University.WebPages.Count > 0)
+                {
+                    <a href="@University.WebPages[0]"
+                       target="_blank">
+                        @University.WebPages[0]
+                    </a>
+                }
+                else
+                {
+                    <span>Not available</span>
+                }
+            </p>
+
+            <p>
+                <strong>Domain:</strong>
+
+                @string.Join(", ", University.Domains)
+            </p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public University? University { get; set; }
+}

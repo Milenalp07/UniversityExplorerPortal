@@ -1,0 +1,160 @@
+﻿@page "/student-applications/edit/{Id:int}"
+
+@using global::UniversityPortal.Models
+@using global::UniversityPortal.Services
+@using global::UniversityPortal.Components.Shared
+
+@inject StudentApplicationService ApplicationApi
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Student Application</PageTitle>
+
+<div class="container mt-4 mb-5">
+
+    <h2>Edit Student Application</h2>
+
+    <p class="text-muted">
+        Update an existing university application.
+    </p>
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info">
+            Loading application details...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+
+            <button class="btn btn-outline-danger btn-sm ms-2"
+                    @onclick="LoadApplication">
+                Try Again
+            </button>
+        </div>
+    }
+    else if (application != null)
+    {
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success">
+                @successMessage
+            </div>
+        }
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <h5>Application ID: @application.Id</h5>
+
+                <hr />
+
+                <StudentApplicationForm Application="application"
+                                        OnSave="UpdateApplication"
+                                        ButtonText="Save Changes"
+                                        IsSubmitting="isSubmitting" />
+
+                <button type="button"
+                        class="btn btn-secondary mt-3"
+                        @onclick="CancelEdit"
+                        disabled="@isSubmitting">
+                    Cancel
+                </button>
+
+            </div>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private StudentApplication? application;
+
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApplication();
+    }
+
+    private async Task LoadApplication()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            application = await ApplicationApi
+                .GetApplicationByIdAsync(Id);
+
+            if (application == null)
+            {
+                errorMessage = "Application not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                "Unable to load application: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task UpdateApplication(
+        StudentApplication updatedApplication)
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            bool success = await ApplicationApi.UpdateApplicationAsync(
+    Id,
+    updatedApplication
+);
+
+            if (success)
+            {
+                successMessage = "Application updated successfully!";
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/student-applications");
+            }
+            else
+            {
+                errorMessage = "Unable to update application. Please try again.";
+            }
+
+            successMessage = "Application updated successfully!";
+
+            await Task.Delay(1000);
+
+            Navigation.NavigateTo("/student-applications");
+        }
+        catch (Exception ex)
+        {
+            errorMessage =
+                "Unable to update application: " + ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        Navigation.NavigateTo("/student-applications");
+    }
+}

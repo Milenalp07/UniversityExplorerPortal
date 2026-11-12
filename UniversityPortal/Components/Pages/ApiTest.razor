@@ -1,0 +1,184 @@
+﻿@page "/api-test"
+
+@using global::UniversityPortal.Models
+@using global::UniversityPortal.Services
+
+@inject CountryService CountryApi
+@inject UniversityService UniversityApi
+
+<PageTitle>API Integration Test</PageTitle>
+
+<div class="container mt-4">
+
+    <h2>API Integration Test</h2>
+
+    <p class="text-muted">
+        Testing Countries API and Universities API integration.
+    </p>
+
+    <hr />
+
+    @if (isLoading)
+    {
+        <div class="alert alert-info">
+            Loading countries...
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            Successfully loaded @countries.Count countries.
+        </div>
+
+        <div class="mb-4">
+
+            <label class="form-label">
+                <strong>Select Country</strong>
+            </label>
+
+            <select class="form-select"
+                    @bind="selectedCountry"
+                    @bind:after="LoadUniversities">
+
+                <option value="">Select a country...</option>
+
+                @foreach (var country in countries)
+                {
+                    <option value="@country.Name">
+                        @country.Name
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+        @if (universitiesLoading)
+        {
+            <div class="alert alert-info">
+                Loading universities...
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(universityError))
+        {
+            <div class="alert alert-danger">
+                @universityError
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(selectedCountry)
+             && !universitiesLoading
+             && string.IsNullOrEmpty(universityError))
+        {
+            <h4>Universities in @selectedCountry</h4>
+
+            <p>
+                Total universities found: @universities.Count
+            </p>
+
+            @if (universities.Count == 0)
+            {
+                <p>No universities found for this country.</p>
+            }
+            else
+            {
+                <div class="list-group">
+
+                    @foreach (var university in universities)
+                    {
+                        <div class="list-group-item">
+
+                            <h5>@university.Name</h5>
+
+                            <p>
+                                <strong>Country:</strong>
+                                @university.Country
+                            </p>
+
+                            @if (university.WebPages.Count > 0)
+                            {
+                                <a href="@university.WebPages[0]"
+                                   target="_blank">
+                                    Visit Website
+                                </a>
+                            }
+
+                        </div>
+                    }
+
+                </div>
+            }
+        }
+    }
+
+</div>
+
+@code {
+
+    private List<Country> countries = new();
+
+    private List<University> universities = new();
+
+    private string selectedCountry = string.Empty;
+
+    private string errorMessage = string.Empty;
+
+    private string universityError = string.Empty;
+
+    private bool isLoading = true;
+
+    private bool universitiesLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            countries = await CountryApi.GetCountriesAsync();
+
+            countries = countries
+                .OrderBy(c => c.Name)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Unable to load countries: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadUniversities()
+    {
+        universities.Clear();
+        universityError = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(selectedCountry))
+            return;
+
+        universitiesLoading = true;
+
+        try
+        {
+            universities = await UniversityApi
+                .GetUniversitiesByCountryAsync(selectedCountry);
+        }
+        catch (Exception ex)
+        {
+            universityError =
+                "Unable to load universities: " + ex.Message;
+        }
+        finally
+        {
+            universitiesLoading = false;
+        }
+    }
+}
